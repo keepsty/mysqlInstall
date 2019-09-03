@@ -37,6 +37,7 @@ class MysqlInstall(object):
         self.data_dir = '/data/mysql/mysql{}'.format(self.port)
         path = os.path.split(os.path.realpath(__file__))
         self.file_path = os.path.join(path[0])
+        self.new_password = "111111"
 
     def remote_execute(self, cmd):
         # private_key = paramiko.RSAKey.from_private_key_file('/Users/yky/.ssh/id_rsa')   # 本机测试
@@ -71,6 +72,7 @@ class MysqlInstall(object):
         "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(self.software_dir)
         :return:
         '''
+        self.remote_execute('yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
         scp_mysql_packet_cmd = "scp  {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz {1}@{2}:{0}/".format(
             self.software_dir, self.user, self.host)
         tar_mysql_packet_cmd = "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(
@@ -130,10 +132,11 @@ class MysqlInstall(object):
         tmp_passwd = self.remote_execute(
             "cat %s|grep temporary|awk -F 'localhost: ' '{print $2}'" % (self.data_dir + '/logs/error.log'))
         tmp_passwd = tmp_passwd.decode(encoding='utf8').rstrip("\n")
-        change_passwd_cmd = " alter user user() identified by \'111111\' "
-        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p \'{0}\' -S {1} -e \'{2}\''.format(tmp_passwd,
-                                                                                                        self.data_dir + 'tmp/mysql.sock',
-                                                                                                        change_passwd_cmd)
+        mysql_change_password = """ /usr/local/mysql/bin/mysqladmin -uroot -p'{password}' -S {sock} password '{cmd}' """.format(
+            password=tmp_passwd,
+            sock=self.data_dir + "/tmp/mysql.sock",
+            cmd=self.new_password)
+
         print(mysql_change_password)
         self.remote_execute(mysql_change_password)
 
