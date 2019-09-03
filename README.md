@@ -25,6 +25,7 @@ drwxr-xr-x. 2 root root  101 Sep  3 04:45 __pycache__
 -rw-r--r--. 1 root root  541 Sep  3 04:45 test.py
 
 4. 软件包存放（同远端）目录：
+   PS: 需要提前准备好mysql二进制包。
 [root@mysql1 mysqlinstall]# cd /opt/mysql
 [root@mysql1 mysql]# pwd
 /opt/mysql
