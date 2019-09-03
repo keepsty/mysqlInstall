@@ -117,7 +117,6 @@ class MysqlInstall(object):
 
         self.remote_execute('groupadd mysql && useradd -g mysql -s /sbin/nologin -d /usr/local/mysql -MN mysql')
         self.remote_execute('chown -R mysql.mysql {}'.format(self.data_dir))
-
         init_mysql_cmd = "{0}/bin/mysqld --defaults-file={1}/{2} --initialize ".format(self.base_dir, self.data_dir,
                                                                                        default_file)
         init_result = self.remote_execute(init_mysql_cmd)
@@ -132,11 +131,13 @@ class MysqlInstall(object):
             "cat %s|grep temporary|awk -F 'localhost: ' '{print $2}'" % (self.data_dir + '/logs/error.log'))
         tmp_passwd = tmp_passwd.decode(encoding='utf8').rstrip("\n")
         change_passwd_cmd = ' alter user user() identified by "111111" '
-        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p "%s" -S %s -e "%s"' % (tmp_passwd,
+        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p "{0}" -S {1} -e "{2}"'.format(tmp_passwd,
                                                                                            self.data_dir + 'tmp/mysql.sock',
                                                                                            change_passwd_cmd)
         print(mysql_change_password)
         self.remote_execute(mysql_change_password)
+
+        self.remote_execute('echo "export PATH=$PATH:/usr/local/mysql/bin" >> /etc/profile && source /etc/profile')
 
     def start_mysql(self):
         pass
