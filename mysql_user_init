@@ -1,0 +1,5 @@
+
+pass=$1
+my_socket=$2
+BASEDIR=$3
+$BASEDIR/bin/mysql  -uroot  --password="$pass" -S $my_socket -e 'alter user user() identified by '111111';create user 'yang'@'172.%' identified by '111111'; grant all privileges on *.* to 'yang'@'172.%';create user 'repl'@'172.%' identified by 'repl'; grant replication slave on *.* to 'repl'@'172.%'; flush privileges "

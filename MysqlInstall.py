@@ -61,7 +61,7 @@ class MysqlInstall(object):
             if base_dir_result:
                 print('当前软件版本及链接: \n{}'.format(base_dir_result.decode(encoding='utf8')))
                 input_result = input(
-                    "请检查base目录软连接、mysql版本是否正确:\n均正确请输入'yes'：\n版本问题，请输入'mysql':\nbase目录软连接问题，请输入'link':")
+                    "请检查base目录软连接、mysql版本是否正确:\n均正确请输入[ yes ]：\n版本问题，请输入[ mysql ]:\nbase目录软连接问题，请输入[ link ]:")
         return soft_dir_result, input_result
 
     def init_mysql_soft_dir(self):
@@ -130,10 +130,10 @@ class MysqlInstall(object):
         tmp_passwd = self.remote_execute(
             "cat %s|grep temporary|awk -F 'localhost: ' '{print $2}'" % (self.data_dir + '/logs/error.log'))
         tmp_passwd = tmp_passwd.decode(encoding='utf8').rstrip("\n")
-        change_passwd_cmd = ' alter user user() identified by "111111" '
-        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p "{0}" -S {1} -e "{2}"'.format(tmp_passwd,
-                                                                                           self.data_dir + 'tmp/mysql.sock',
-                                                                                           change_passwd_cmd)
+        change_passwd_cmd = " alter user user() identified by \'111111\' "
+        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p \'{0}\' -S {1} -e \'{2}\''.format(tmp_passwd,
+                                                                                                        self.data_dir + 'tmp/mysql.sock',
+                                                                                                        change_passwd_cmd)
         print(mysql_change_password)
         self.remote_execute(mysql_change_password)
 
