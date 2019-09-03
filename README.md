@@ -11,11 +11,17 @@
 [root@mysql1 mysqlinstall]# ll
 total 40
 -rw-r--r--. 1 root root   91 Sep  3 04:43 __init__.py
+
 -rw-r--r--. 1 root root 4499 Sep  3 05:18 my3308.cnf    -- 生成的配置文件，scp方式拷贝到远端
+
 -rw-r--r--. 1 root root 5062 Sep  3 04:43 my_cnf.py     -- 配置文件模板
+
 -rw-r--r--. 1 root root 8245 Sep  3 05:17 MysqlInstall.py
+
 -rw-r--r--. 1 root root  354 Sep  3 04:43 mysql_user_init
+
 drwxr-xr-x. 2 root root  101 Sep  3 04:45 __pycache__
+
 -rw-r--r--. 1 root root  541 Sep  3 04:45 test.py
 
 4. 软件包存放（同远端）目录：
