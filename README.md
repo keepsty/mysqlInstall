@@ -29,7 +29,8 @@ drwxr-xr-x. 2 root root  101 Sep  3 04:45 __pycache__
 [root@mysql1 mysql]# pwd
 /opt/mysql
 [root@mysql1 mysql]# ll
-total 629816
+
+
 -rw-r--r--. 1 root root 644930593 Sep  2 23:13 mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz
 
 5. 执行命令案例：
