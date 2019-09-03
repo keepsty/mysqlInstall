@@ -131,8 +131,8 @@ class MysqlInstall(object):
         tmp_passwd = self.remote_execute(
             "cat %s|grep temporary|awk -F 'localhost: ' '{print $2}'" % (self.data_dir + '/logs/error.log'))
         tmp_passwd = tmp_passwd.decode(encoding='utf8').rstrip("\n")
-        change_passwd_cmd = " alter user user() identified by '111111' "
-        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p %s -S %s -e "%s"' % (tmp_passwd,
+        change_passwd_cmd = ' alter user user() identified by "111111" '
+        mysql_change_password = '/usr/local/mysql/bin/mysql -uroot -p "%s" -S %s -e "%s"' % (tmp_passwd,
                                                                                            self.data_dir + 'tmp/mysql.sock',
                                                                                            change_passwd_cmd)
         print(mysql_change_password)
