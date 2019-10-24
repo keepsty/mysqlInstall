@@ -56,7 +56,10 @@ class MysqlInstall(object):
         path = os.path.split(os.path.realpath(__file__))
         self.file_path = os.path.join(path[0])
         self.new_password = "111111"
+<<<<<<< HEAD
         self.init_mysql_soft_dir()
+=======
+>>>>>>> 46b44c1d5ffdd24b147cc62c96bdfb7c20ebb000
 
     def remote_execute(self, cmd):
         # private_key = paramiko.RSAKey.from_private_key_file('/Users/yky/.ssh/id_rsa')   # 本机测试
@@ -91,6 +94,7 @@ class MysqlInstall(object):
         "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(self.software_dir)
         :return:
         '''
+<<<<<<< HEAD
         self.remote_execute(
             'yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
         remote_packet_exists_cmd = 'ls {}'.format( self.mysql_packet)
@@ -100,6 +104,16 @@ class MysqlInstall(object):
             scp_mysql_packet_cmd = "scp  {0}/{3} {1}@{2}:{0}/".format(
                 self.software_dir, self.user, self.host, self.mysql_packet)
             print('scp packet to remote')
+=======
+        self.remote_execute('yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
+        scp_mysql_packet_cmd = "scp  {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz {1}@{2}:{0}/".format(
+            self.software_dir, self.user, self.host)
+        tar_mysql_packet_cmd = "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(
+            self.software_dir)
+        link_mysql_packet_cmd = "ln -s {0}/mysql-5.7.24-linux-glibc2.12-x86_64 {1}".format(self.software_dir,
+                                                                                           self.base_dir)
+        if not self.remote_execute('ls {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz '.format(self.software_dir)):
+>>>>>>> 46b44c1d5ffdd24b147cc62c96bdfb7c20ebb000
             os.system(scp_mysql_packet_cmd)
 
         if not self.remote_execute('ls {}/{}'.format(self.software_dir, self.packet_name)):
@@ -166,7 +180,11 @@ class MysqlInstall(object):
         tmp_passwd = tmp_passwd.decode(encoding='utf8').rstrip("\n")
         mysql_change_password = """ /usr/local/mysql/bin/mysqladmin -uroot -p'{password}' -S {sock} password '{cmd}' """.format(
             password=tmp_passwd,
+<<<<<<< HEAD
             sock="/tmp/mysql_{}.sock".format(self.port),
+=======
+            sock=self.data_dir + "/tmp/mysql.sock",
+>>>>>>> 46b44c1d5ffdd24b147cc62c96bdfb7c20ebb000
             cmd=self.new_password)
 
         print(mysql_change_password)
