@@ -5,8 +5,8 @@
 
 my_cnf = """
 [client]
-port	= 3306
-socket	= {data_dir_new}/tmp/mysql.sock
+port	= {port_new}
+socket	= /tmp/mysql_{port_new}.sock
 
 [mysql]
 no-auto-rehash
@@ -16,7 +16,7 @@ user	= mysql
 port	= {port_new}
 basedir	= {base_dir_new}
 datadir	= {data_dir_new}/data
-socket	= {data_dir_new}/tmp/mysql.sock
+socket	= /tmp/mysql_{port_new}.sock
 pid-file = mysql1.pid
 character-set-server = utf8mb4
 skip_name_resolve = 1
@@ -94,10 +94,10 @@ innodb_buffer_pool_size = {BP_size}
 innodb_buffer_pool_instances = 4
 innodb_buffer_pool_load_at_startup = 1
 innodb_buffer_pool_dump_at_shutdown = 1
-innodb_data_file_path = ibdata1:1G:autoextend
+innodb_data_file_path = ibdata1:128M:autoextend
 innodb_flush_log_at_trx_commit = 1
 innodb_log_buffer_size = 32M
-innodb_log_file_size = 2G
+innodb_log_file_size = 128M
 innodb_log_files_in_group = 2
 innodb_max_undo_log_size = 4G
 innodb_undo_directory = {data_dir_new}/data/undolog
