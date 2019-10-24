@@ -8,11 +8,11 @@ import argparse, sys, paramiko, os, time
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-from mysqlinstall import my_cnf
+from mysqlinstall import *
 
 
 class MysqlInstall(object):
-    def __init__(self, host, user, port, memory, *args, **kwargs):
+    def __init__(self, host, user, port, memory, version, *args, **kwargs):
         '''
         函数默认使用ssh(秘钥)方式来进行远程执行命令
         执行脚本机器环境：
@@ -31,13 +31,32 @@ class MysqlInstall(object):
         self.user = user
         self.port = port
         self.memory = memory
+        self.version = version
         self.software_dir = "/opt/mysql"
         self.base_dir = "/usr/local/mysql"
-        self.mysql_packet = 'mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz'
+        if self.version == '8.0':
+            self.mysql_packet = self.remote_execute('find {} -name mysql-8.0*.tar.xz'.format(self.software_dir))
+            if not self.mysql_packet:
+                self.mysql_packet = self.mysql_packet = os.popen(
+                    'ls {} |grep mysql-8.0.*.tar.xz'.format(self.software_dir))
+        elif self.version == '5.7':
+            self.mysql_packet = self.remote_execute('find {} -name mysql-5.7.*.tar.gz'.format(self.software_dir))
+            if not self.mysql_packet:
+                self.mysql_packet = self.mysql_packet = os.popen(
+                    'find {} -name mysql-5.7.*.tar.gz'.format(self.software_dir))
+                print('my packet name : ', self.mysql_packet)
+        else:
+            pass
+        self.mysql_packet = self.mysql_packet.decode('utf8')
+        self.packet_name = self.mysql_packet.split('.tar')[0]
+        print('my packet name ', self.packet_name)
+        print("mysql version is {}".format(self.mysql_packet))
+        self.packet_dir = self.mysql_packet.split('.tar')[0]
         self.data_dir = '/data/mysql/mysql{}'.format(self.port)
         path = os.path.split(os.path.realpath(__file__))
         self.file_path = os.path.join(path[0])
         self.new_password = "111111"
+        self.init_mysql_soft_dir()
 
     def remote_execute(self, cmd):
         # private_key = paramiko.RSAKey.from_private_key_file('/Users/yky/.ssh/id_rsa')   # 本机测试
@@ -72,40 +91,53 @@ class MysqlInstall(object):
         "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(self.software_dir)
         :return:
         '''
-        self.remote_execute('yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
-        scp_mysql_packet_cmd = "scp  {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz {1}@{2}:{0}/".format(
-            self.software_dir, self.user, self.host)
-        tar_mysql_packet_cmd = "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(
-            self.software_dir)
-        link_mysql_packet_cmd = "ln -s {0}/mysql-5.7.24-linux-glibc2.12-x86_64 {1}".format(self.software_dir,
-                                                                                           self.base_dir)
-        if not self.remote_execute('ls {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz '.format(self.software_dir)):
+        self.remote_execute(
+            'yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
+        remote_packet_exists_cmd = 'ls {}'.format(self.mysql_packet)
+        remote_packet_exists_res = self.remote_execute(remote_packet_exists_cmd)
+        print('remote packet is exists:', remote_packet_exists_res)
+        if not remote_packet_exists_res:
+            scp_mysql_packet_cmd = "scp  {0}/{3} {1}@{2}:{0}/".format(
+                self.software_dir, self.user, self.host, self.mysql_packet)
+            print('scp packet to remote')
             os.system(scp_mysql_packet_cmd)
 
-        tar_packet_result = self.remote_execute(tar_mysql_packet_cmd)
-        link_mysql_base_result = self.remote_execute(link_mysql_packet_cmd)
+        if not self.remote_execute('ls {}/{}'.format(self.software_dir, self.packet_name)):
+            tar_mysql_packet_cmd = "tar -xvf {0}/{1} -C {0}".format(
+                self.software_dir, self.mysql_packet)
+            tar_packet_result = self.remote_execute(tar_mysql_packet_cmd)
+
+            link_mysql_packet_cmd = "ln -s {0}/{2} {1}".format(self.software_dir, self.base_dir, self.packet_dir)
+            link_mysql_base_result = self.remote_execute(link_mysql_packet_cmd)
+            if tar_packet_result:
+                return "mysql packet init complete!"
+            elif link_mysql_base_result:
+                return "mysql packet init fail "
+            else:
+                return
 
         self.remote_execute('groupadd mysql && useradd -g mysql -s /sbin/nologin -d /usr/local/mysql -MN mysql')
         self.remote_execute('chown -R mysql.mysql {}'.format(self.data_dir))
-
-        if tar_packet_result:
-            return "mysql packet init complete!"
-        elif link_mysql_base_result:
-            return "mysql packet init fail "
-        else:
-            return
 
     def relink_mysql_dir(self):
         pass
 
     def init_mysql(self):
-        self.remote_execute('mkdir -p %s/{data,logs,tmp}' % (self.data_dir))
+        self.remote_execute('mkdir -p %s/{data,logs,tmp}' % self.data_dir)
 
         default_file = 'my{}.cnf'.format(self.port)
         host_last = self.host.split('.')[3]
         server_id_new = '{}{}'.format(host_last, self.port)
 
-        my_cnf_str = my_cnf.init_mysql_cnf(self.base_dir, self.data_dir, self.memory, self.port, server_id_new)
+        if self.version == '8.0':
+            from mysqlinstall import my_cnf_80
+            my_cnf_str = my_cnf_80.init_mysql_cnf(self.base_dir, self.data_dir, self.memory, self.port, server_id_new,
+                                                  self.host)
+        else:
+            from mysqlinstall import my_cnf_57
+            my_cnf_str = my_cnf_57.init_mysql_cnf(self.base_dir, self.data_dir, self.memory, self.port, server_id_new,
+                                                  self.host)
+
         with open(default_file, 'w', encoding='utf8') as f:
             f.write(my_cnf_str)
 
@@ -116,12 +148,14 @@ class MysqlInstall(object):
             return None
         else:
             os.system('scp {0} {1}@{2}:{3}'.format(default_file, self.user, self.host, self.data_dir))  # 拷贝配置文件到指定dir
+            print('scp 配置文件')
 
         self.remote_execute('groupadd mysql && useradd -g mysql -s /sbin/nologin -d /usr/local/mysql -MN mysql')
         self.remote_execute('chown -R mysql.mysql {}'.format(self.data_dir))
         init_mysql_cmd = "{0}/bin/mysqld --defaults-file={1}/{2} --initialize ".format(self.base_dir, self.data_dir,
                                                                                        default_file)
         init_result = self.remote_execute(init_mysql_cmd)
+        print(init_result)
         # if init_result:
         #     return '初始化失败，请检查环境。'
 
@@ -134,30 +168,29 @@ class MysqlInstall(object):
         tmp_passwd = tmp_passwd.decode(encoding='utf8').rstrip("\n")
         mysql_change_password = """ /usr/local/mysql/bin/mysqladmin -uroot -p'{password}' -S {sock} password '{cmd}' """.format(
             password=tmp_passwd,
-            sock=self.data_dir + "/tmp/mysql.sock",
+            sock="/tmp/mysql_{}.sock".format(self.port),
             cmd=self.new_password)
 
         print(mysql_change_password)
         self.remote_execute(mysql_change_password)
 
-        self.remote_execute('echo "export PATH=$PATH:/usr/local/mysql/bin" >> /etc/profile && source /etc/profile')
+        # self.remote_execute('echo "export PATH=$PATH:/usr/local/mysql/bin" >> /etc/profile && source /etc/profile')
 
     def start_mysql(self):
         pass
 
 
-def run(host, user, port, memory):
-    mysql_instance = MysqlInstall(host, user, port, memory)
+def run(host, user, port, memory, version):
+    mysql_instance = MysqlInstall(host, user, port, memory, version)
     soft_dir_result, base_dir_result = mysql_instance.get_mysql_software_dir()
     mysql_instance.remote_execute('mkdir -p {}'.format(mysql_instance.software_dir))
     if base_dir_result == 'yes':
         print('检查目录正确，不需要重写解压目录')
         mysql_instance.init_mysql()
 
-    elif base_dir_result == "mysql":
+    elif base_dir_result == "mysql" or not soft_dir_result or not base_dir_result:
         print('mysql 版本问题，下载mysql，传输到远程host')
         ret = mysql_instance.init_mysql_soft_dir()
-        print(ret)
 
     elif base_dir_result == "link":
         print("软连接有问题，请联系管理员")
@@ -172,10 +205,11 @@ if __name__ == "__main__":
     parse.add_argument('-U', '--user', type=str, help='请输入远程用户名')
     # parse.add_argument('-p', '--password', type=str, help='请输入远程密码')
     parse.add_argument('-M', '--memory', type=str, help='请输入初始化mysql I_B_P内存默认单位M/G')
-    ip, port, memory, user = parse.parse_args().ip, parse.parse_args().port, parse.parse_args().memory, parse.parse_args().user
+    parse.add_argument('-V', '--version', type=str, help='请输入选择mysql版本')
+    ip, port, memory, user, version = parse.parse_args().ip, parse.parse_args().port, parse.parse_args().memory, parse.parse_args().user, parse.parse_args().version
 
     if not ip:
         print("Some Err,input '-h' for help.")
         sys.exit()
     else:
-        run(ip, user, port, memory)
+        run(ip, user, port, memory, version)

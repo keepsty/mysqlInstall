@@ -61,6 +61,10 @@ max_binlog_size = 1G
 #注意：MySQL 8.0开始，binlog_expire_logs_seconds选项也存在的话，会忽略expire_logs_days选项
 expire_logs_days = 7
 
+# pt-table-checksum
+report_host = {instance_ip}  ##当前实例ip
+report_port = {port_new}   ##当前实例端口
+
 master_info_repository = TABLE
 relay_log_info_repository = TABLE
 gtid_mode = on
@@ -165,14 +169,14 @@ max_allowed_packet = 32M
 """
 
 
-def init_mysql_cnf(base_dir_new, data_dir_new, BP_size, port_new, server_id_new):
+def init_mysql_cnf(base_dir_new, data_dir_new, BP_size, port_new, server_id_new, instance_ip):
     new_cnf = my_cnf.format(base_dir_new=base_dir_new, data_dir_new=data_dir_new, BP_size=BP_size, port_new=port_new,
-                  server_id_new=server_id_new)
+                            server_id_new=server_id_new, instance_ip=instance_ip)
 
     return new_cnf
 
 
 if __name__ == "__main__":
     ret = init_mysql_cnf(base_dir_new='/usr/local/mysql', data_dir_new='/data/mysql/mysql3308', BP_size='1G',
-                         port_new=3308, server_id_new=3308110)
+                         port_new=3308, server_id_new=3308110, instance_ip='172.16.111.131')
     print(ret)
