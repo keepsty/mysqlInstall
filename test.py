@@ -3,7 +3,9 @@
 # Author :Yangky
 # @TIME : 2019-09-03 09:55
 
-import paramiko
+import argparse, sys, paramiko, os, time
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
 
 from mysqlinstall import MysqlInstall
 

@@ -1,22 +1,17 @@
-#!/usr/local/bin/python3
-# -*- coding:utf-8 -*-
-# Author :Yangky
-# @TIME : 2019-09-02 19:48
 
-my_cnf = """
 [client]
-port	= 3306
-socket	= {data_dir_new}/tmp/mysql.sock
+port	= 3308
+socket	= /tmp/mysql_3308.sock
 
 [mysql]
 no-auto-rehash
 
 [mysqld]
 user	= mysql
-port	= {port_new}
-basedir	= {base_dir_new}
-datadir	= {data_dir_new}/data
-socket	= {data_dir_new}/tmp/mysql.sock
+port	= 3308
+basedir	= /usr/local/mysql
+datadir	= /data/mysql/mysql3308/data
+socket	= /tmp/mysql_3308.sock
 pid-file = mysql1.pid
 character-set-server = utf8mb4
 skip_name_resolve = 1
@@ -43,16 +38,16 @@ tmp_table_size = 32M
 max_heap_table_size = 32M
 slow_query_log = 1
 log_timestamps = SYSTEM
-slow_query_log_file = {data_dir_new}/logs/slow.log
-log-error = {data_dir_new}/logs/error.log
+slow_query_log_file = /data/mysql/mysql3308/logs/slow.log
+log-error = /data/mysql/mysql3308/logs/error.log
 long_query_time = 0.1
 log_queries_not_using_indexes =1
 log_throttle_queries_not_using_indexes = 60
 min_examined_row_limit = 100
 log_slow_admin_statements = 1
 log_slow_slave_statements = 1
-server-id = {server_id_new}
-log-bin = {data_dir_new}/data/mybinlog
+server-id = 1313308
+log-bin = /data/mysql/mysql3308/data/mybinlog
 sync_binlog = 1
 binlog_cache_size = 4M
 max_binlog_cache_size = 2G
@@ -86,7 +81,7 @@ innodb_spin_wait_delay = 30
 
 transaction_isolation = REPEATABLE-READ
 #innodb_additional_mem_pool_size = 16M
-innodb_buffer_pool_size = {BP_size}
+innodb_buffer_pool_size = 64M
 innodb_buffer_pool_instances = 4
 innodb_buffer_pool_load_at_startup = 1
 innodb_buffer_pool_dump_at_shutdown = 1
@@ -96,7 +91,7 @@ innodb_log_buffer_size = 32M
 innodb_log_file_size = 2G
 innodb_log_files_in_group = 2
 innodb_max_undo_log_size = 4G
-innodb_undo_directory = {data_dir_new}/data/undolog
+innodb_undo_directory = /data/mysql/mysql3308/data/undolog
 innodb_undo_tablespaces = 95
 
 # 根据您的服务器IOPS能力适当调整
@@ -123,15 +118,15 @@ innodb_online_alter_log_max_size = 4G
 innodb_stats_on_metadata = 0
 
 #注意：MySQL 8.0.16开始删除该选项
-internal_tmp_disk_storage_engine = InnoDB
+#internal_tmp_disk_storage_engine = InnoDB
 
 # some var for MySQL 5.7
-innodb_checksums = 1
+#innodb_checksums = 1
 #innodb_file_format = Barracuda
 #innodb_file_format_max = Barracuda
-query_cache_size = 0
-query_cache_type = 0
-innodb_undo_logs = 128
+#query_cache_size = 0
+#query_cache_type = 0
+#innodb_undo_logs = 128
 
 innodb_status_file = 1
 #注意: 开启 innodb_status_output & innodb_status_output_locks 后, 可能会导致log-error文件增长较快
@@ -162,17 +157,3 @@ innodb_monitor_enable="module_adaptive_hash"
 [mysqldump]
 quick
 max_allowed_packet = 32M
-"""
-
-
-def init_mysql_cnf(base_dir_new, data_dir_new, BP_size, port_new, server_id_new):
-    new_cnf = my_cnf.format(base_dir_new=base_dir_new, data_dir_new=data_dir_new, BP_size=BP_size, port_new=port_new,
-                  server_id_new=server_id_new)
-
-    return new_cnf
-
-
-if __name__ == "__main__":
-    ret = init_mysql_cnf(base_dir_new='/usr/local/mysql', data_dir_new='/data/mysql/mysql3308', BP_size='1G',
-                         port_new=3308, server_id_new=3308110)
-    print(ret)
