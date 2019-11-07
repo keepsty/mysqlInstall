@@ -91,8 +91,7 @@ class MysqlInstall(object):
         "tar -zxvf {0}/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C {0}".format(self.software_dir)
         :return:
         '''
-        self.remote_execute(
-            'yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
+
         remote_packet_exists_cmd = 'ls {}'.format(self.mysql_packet)
         remote_packet_exists_res = self.remote_execute(remote_packet_exists_cmd)
         print('remote packet is exists:', remote_packet_exists_res)
@@ -101,6 +100,8 @@ class MysqlInstall(object):
                 self.software_dir, self.user, self.host, self.mysql_packet)
             print('scp packet to remote')
             os.system(scp_mysql_packet_cmd)
+            self.remote_execute(
+                'yum -y install gcc gcc-c++ make cmake ncurses ncurses-devel libxml2 libxml2-devel openssl-devel bison bison-devel libaio')
 
         if not self.remote_execute('ls {}/{}'.format(self.software_dir, self.packet_name)):
             tar_mysql_packet_cmd = "tar -xvf {0}/{1} -C {0}".format(

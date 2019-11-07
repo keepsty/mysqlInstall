@@ -5,8 +5,11 @@
 
 import pymysql
 
+import time
+
 int_time = "show global variables like 'interactive_timeout'"
-wait_time = "show global variables like 'wait_timeout'"
+wait_time = "show global variables like 'wait_timeout';"
+sleep_time = "select sleep(610);"
 change_int_time = "set global interactive_timeout=15"
 
 conn = pymysql.Connect(host='172.16.111.131', user='yang', password='111111', port=3308)
@@ -17,6 +20,14 @@ cur.execute(int_time)
 int_ret = cur.fetchone()
 cur.execute(wait_time)
 wait_ret = cur.fetchone()
+
+start_time = time.time()
+cur.execute(sleep_time)
+sleep_ret = cur.fetchone()
+end_time = time.time()
+
+exec_time = end_time - start_time
+print(exec_time)
 
 cur.close()
 
